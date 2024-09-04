@@ -36,9 +36,9 @@ def thumbnailimg():
     print("load_iddoc")
 
     pagefile = []
-    index = int(request.args.get('index'))
-    if index == None:
-        index = 0
+    index = request.args.get('index')
+    if index == None: index = 0
+    else: index = int(index)
 
     imgperindex = 100
     
@@ -103,7 +103,7 @@ def text_search():
     for imgpath, id in zip(list_image_paths, list_ids):
         pagefile.append({'imgpath': imgpath, 'id': int(id)})
 
-    data = {'num_page': int(LenDictPath/imgperindex)+1, 'pagefile': pagefile}
+    data = {'query': text_query, 'num_page': int(LenDictPath/imgperindex)+1, 'pagefile': pagefile}
     
     return render_template('home.html', data=data)
 
@@ -124,8 +124,7 @@ def get_img():
     img = cv2.resize(img, (1280,720))
 
     # print(img.shape)
-    img = cv2.putText(img, image_name, (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 
-                   3, (255, 0, 0), 4, cv2.LINE_AA)
+    #img = cv2.putText(img, image_name, (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 4, cv2.LINE_AA)
 
     ret, jpeg = cv2.imencode('.jpg', img)
     return  Response((b'--frame\r\n'

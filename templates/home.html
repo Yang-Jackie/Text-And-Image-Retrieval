@@ -321,13 +321,19 @@
       </div>
     <script>
         var data = '{{ data|tojson }}';
-        data = data.replace(/\s/g, '');
-        data = data.replace(/\\/g, '/');
+        console.log(data);
+        // data = data.replace(/\s/g, '');
+        // data = data.replace(/\\/g, '/');
         data = JSON.parse(data);
+        console.log(data instanceof Map);
         let btn_knn = document.getElementsByClassName("btn_knn");
         let btn_select = document.getElementsByClassName("btn_select");
         let hoverImg = document.getElementsByClassName("hoverImg");
-        // console.log("data: " + JSON.stringify(data))
+
+        document.getElementById("text_query").addEventListener('keydown', function(event) {
+            if (event.key == 'Enter') search();
+        });
+
         function add_paging(){
             console.log(data['num_page']);
             var url = new URL(window.location.href);
@@ -350,7 +356,7 @@
                 }
                 var iDiv = document.createElement('div');
                 iDiv.className = 'page_num';
-                var iA = document.createElement('a');
+                var iA = documen1t.createElement('a');
                 // iA.href = "?index="+i.toString()+"&imgpath="+imgpath+"&labelpath="+labelpath;
                 iA.href = "?index="+i.toString()+"&imgpath="+imgpath;
                 iA.innerHTML = i.toString();
@@ -376,7 +382,7 @@
             pagefile_list.forEach((item,index) => {
                 // console.log('item: ' + JSON.stringify(item))
                 $("#div_img").append(
-                    `<div class= "container_img_btn"  onmouseover="mouseOver(${index})" onmouseout="mouseOut(${index})">
+                    `<div class= "container_img_btn" onmouseover="mouseOver(${index})" onmouseout="mouseOut(${index})" title="${item.imgpath}">
                         <button class="btn_knn" onClick="go_img_search(${item.id})">IR</button>
                         <img class="hoverImg" onclick="show_list_segment(${item.id})" src="get_img?fpath=${item.imgpath}">
                     </div>`
@@ -403,7 +409,8 @@
             var url = new URL(window.location.href);
             var imgpath = url.searchParams.get("imgpath");
             if("query" in data){
-              document.getElementById("text_query").value = data["query"]
+              document.getElementById("text_query").value = data["query"];
+              console.log(data["query"]);
             }
             add_paging();
             add_img("div_img");
@@ -415,10 +422,10 @@
 
         function search(){
             text_query = document.getElementById('text_query').value;
-
+            
+            document.getElementById('text_query').value = text_query;
             window.location.href = "/textsearch?textquery="+text_query;
             
-            document.getElementById('text_query').innerHTML = text_query;
         }
 
 
