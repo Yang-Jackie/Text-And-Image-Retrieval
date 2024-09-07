@@ -193,7 +193,7 @@
         /* list img */
     
         /* add image button */
-        #div_img {
+        .grid_container {
                 display: flex;
                 flex-direction: row;    
                 flex-wrap: wrap;
@@ -203,22 +203,22 @@
                 width: 516px; */
             }
     
-            .container_img_btn {
+            .grid_item {
                 position: relative;
                 width: 100%;
                 max-width: 318px;
                 display: grid;
-                grid-template-columns: auto auto auto auto;
+                /*grid-template-columns: auto auto auto auto;*/
                 padding: 1%;
                 cursor: pointer;
             }
             
-            .container_img_btn img {
+            .grid_item img {
                 width: 100%;
                 height: 100%;
             }
     
-            .container_img_btn .btn_knn {
+            .grid_item .ir_btn {
                 display: none;
                 position: absolute;
                 top: 50%;
@@ -231,7 +231,7 @@
                 border-radius: 5px;
                 text-align: center;
             }
-            .container_img_btn .btn_select {
+            .grid_item .btn_select {
                 display: none;
                 position: absolute;
                 top: 50%;
@@ -245,18 +245,18 @@
                 text-align: center;
             }
             
-            .container_img_btn .btn_knn:hover{
+            .grid_item .ir_btn:hover{
               background-color: #145552;
             }
 
-            .container_img_btn .btn_select:hover{
+            .grid_item .btn_select:hover{
               background-color: #145552;
             }
     
-            .container_img_btn img:hover{
+            .grid_item img:hover{
                 border: 4px solid #4dccc6;
             }
-            /* .container_img_btn img:focus{hoverImg
+            /* .grid_item img:focus{hoverImg
                 border: 1px solid blue;
             } */
             /* poup */
@@ -307,7 +307,7 @@
 
 
         <!-- <div style="height: 5px; width: 100%; background-color: black; margin-bottom: 5px; margin-top: 5px;"></div> -->
-        <div id="div_img">
+        <div class="grid_container">
             
         </div>
   
@@ -322,11 +322,9 @@
     <script>
         var data = '{{ data|tojson }}';
         console.log(data);
-        // data = data.replace(/\s/g, '');
-        // data = data.replace(/\\/g, '/');
         data = JSON.parse(data);
         console.log(data instanceof Map);
-        let btn_knn = document.getElementsByClassName("btn_knn");
+        let ir_btn = document.getElementsByClassName("ir_btn");
         let btn_select = document.getElementsByClassName("btn_select");
         let hoverImg = document.getElementsByClassName("hoverImg");
 
@@ -339,7 +337,6 @@
             var url = new URL(window.location.href);
             var cur_index = parseInt(url.searchParams.get("index"));
             var imgpath = url.searchParams.get("imgpath");
-            // var labelpath = url.searchParams.get("labelpath");
             if (cur_index == 'undefined'){
                 cur_index = 0;
             }
@@ -357,7 +354,6 @@
                 var iDiv = document.createElement('div');
                 iDiv.className = 'page_num';
                 var iA = documen1t.createElement('a');
-                // iA.href = "?index="+i.toString()+"&imgpath="+imgpath+"&labelpath="+labelpath;
                 iA.href = "?index="+i.toString()+"&imgpath="+imgpath;
                 iA.innerHTML = i.toString();
                 if (i == cur_index){
@@ -374,32 +370,36 @@
             }
             document.getElementById("div_total_page").innerHTML = "Total: "+data['num_page'].toString()+" page";
         }
+
+        function img_item(item, index)
+        {
+          return `<div class= "grid_item" onmouseover="mouseOver(${index})" onmouseout="mouseOut(${index})" title="${item.imgpath}">
+                      <button class="ir_btn" onClick="go_img_search(${item.id})">IR</button>
+                      <img class="hoverImg" onclick="show_list_segment(${item.id})" src="get_img?fpath=${item.imgpath}">
+                  </div>`;
+        }
         
         function add_img(div_id_image){
-            let div_img = document.getElementById("div_img");
+            let grid_container = document.getElementById("grid_container");
             let pagefile_list = data['pagefile'];
             
+            let cnt = 0;
             pagefile_list.forEach((item,index) => {
-                // console.log('item: ' + JSON.stringify(item))
-                $("#div_img").append(
-                    `<div class= "container_img_btn" onmouseover="mouseOver(${index})" onmouseout="mouseOut(${index})" title="${item.imgpath}">
-                        <button class="btn_knn" onClick="go_img_search(${item.id})">IR</button>
-                        <img class="hoverImg" onclick="show_list_segment(${item.id})" src="get_img?fpath=${item.imgpath}">
-                    </div>`
-                )
+                cnt++;
+                $(".grid_container").append(img_item(item, index));
+                if (index == 0) console.log(img_item(item, index));
             });
-        
+
+            console.log(cnt);        
         }
         
         function mouseOver(id){
-            // console.log('type: ' + typeof(btn_knn))
-            btn_knn[id].style.display="block";
-            btn_select[id].style.display="block";
+            ir_btn[id].style.display="block";
         }
         function mouseOut(id){
-            // console.log('type: ' + typeof(btn_knn))
-            btn_knn[id].style.display="none";
-            btn_select[id].style.display="none";
+            // console.log('type: ' + typeof(ir_btn))
+            ir_btn[id].style.display="none";
+            //btn_select[id].style.display="none";
         }
         function go_img_search(id){
             window.open("/imgsearch?imgid="+id);
@@ -413,7 +413,7 @@
               console.log(data["query"]);
             }
             add_paging();
-            add_img("div_img");
+            add_img("grid_container");
         }
 
         function show_list_segment(id){
