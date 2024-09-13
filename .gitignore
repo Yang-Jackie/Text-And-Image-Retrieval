@@ -139,3 +139,6 @@ data/
 sort_data/
 Database/
 
+# Stuffs
+*.bin
+id2frames.json
