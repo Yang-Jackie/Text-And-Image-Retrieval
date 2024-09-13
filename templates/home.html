@@ -231,35 +231,15 @@
                 border-radius: 5px;
                 text-align: center;
             }
-            .grid_item .btn_select {
-                display: none;
-                position: absolute;
-                top: 50%;
-                right: 10%;
-                background-color: #4dccc6;
-                color: white;
-                font-size: 16px;
-                padding: 5px 12px;
-                cursor: pointer;
-                border-radius: 5px;
-                text-align: center;
-            }
             
             .grid_item .ir_btn:hover{
-              background-color: #145552;
-            }
-
-            .grid_item .btn_select:hover{
               background-color: #145552;
             }
     
             .grid_item img:hover{
                 border: 4px solid #4dccc6;
             }
-            /* .grid_item img:focus{hoverImg
-                border: 1px solid blue;
-            } */
-            /* poup */
+            
             #popup_canvas{
                 width: 100%;
                 height: 100%;
@@ -325,8 +305,6 @@
         data = JSON.parse(data);
         console.log(data instanceof Map);
         let ir_btn = document.getElementsByClassName("ir_btn");
-        let btn_select = document.getElementsByClassName("btn_select");
-        let hoverImg = document.getElementsByClassName("hoverImg");
 
         document.getElementById("text_query").addEventListener('keydown', function(event) {
             if (event.key == 'Enter') search();
@@ -380,7 +358,6 @@
         }
         
         function add_img(div_id_image){
-            let grid_container = document.getElementById("grid_container");
             let pagefile_list = data['pagefile'];
             
             let cnt = 0;
@@ -397,9 +374,7 @@
             ir_btn[id].style.display="block";
         }
         function mouseOut(id){
-            // console.log('type: ' + typeof(ir_btn))
             ir_btn[id].style.display="none";
-            //btn_select[id].style.display="none";
         }
         function go_img_search(id){
             window.open("/imgsearch?imgid="+id);
