@@ -1,4 +1,5 @@
 from flask import Flask, render_template, Response, request, send_file, jsonify
+from pymongo import MongoClient
 import cv2
 import os
 
@@ -20,7 +21,7 @@ with open("id2frames.json") as json_file:
 DictImagePath = {}
 
 for item in json_list:
-    DictImagePath[int(item["_id"])] = EXTRACTED_PATH + '/' + item["path"]
+    DictImagePath[int(item["_id"])] = EXTRACTED_PATH + "/" + item["path"]
 
 LenDictPath = len(DictImagePath)
 bin_file = "faiss.bin"
@@ -128,7 +129,7 @@ def get_img():
         print("load 404.jpg")
         img = cv2.imread("./static/images/404.jpg")
 
-    img = cv2.resize(img, (1280, 720))
+    img = cv2.resize(img, (640, 360))
 
     # print(img.shape)
     # img = cv2.putText(img, image_name, (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 4, cv2.LINE_AA)
