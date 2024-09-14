@@ -1,11 +1,8 @@
-from flask import Flask, render_template, Response, request, send_file, jsonify
-from pymongo import MongoClient
+from flask import Flask, render_template, Response, request
 import cv2
 import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-import numpy as np
-import glob
 import json
 
 from utils.query_processing import Translation
@@ -15,18 +12,19 @@ EXTRACTED_PATH = "E:/aic2024/data/extracted"
 
 app = Flask(__name__, template_folder="templates")
 
-with open("id2frames.json") as json_file:
+with open("id2frames_v2.json") as json_file:
     json_list = json.load(json_file)
 
-DictImagePath = {}
+DictImagePath = dict()
+id2frame = dict()
 
 for item in json_list:
     DictImagePath[int(item["_id"])] = EXTRACTED_PATH + "/" + item["path"]
+    id2frame[int(item["_id"])] = int(item['frameId'])
 
 LenDictPath = len(DictImagePath)
 bin_file = "faiss.bin"
 MyFaiss = Myfaiss(bin_file, DictImagePath, "cpu", Translation())
-########################
 
 
 @app.route("/home")
@@ -43,10 +41,10 @@ def thumbnailimg():
 
     imgperindex = 100
 
-    # imgpath = request.args.get('imgpath') + "/"
     pagefile = []
 
     page_filelist = []
+    frame_list = []
     list_idx = []
 
     if LenDictPath - 1 > index + imgperindex:
@@ -57,6 +55,7 @@ def thumbnailimg():
         while tmp_index < last_index:
             page_filelist.append(DictImagePath[tmp_index])
             list_idx.append(tmp_index)
+            frame_list.append(id2frame[tmp_index])
             tmp_index += 1
     else:
         first_index = index * imgperindex
@@ -66,10 +65,11 @@ def thumbnailimg():
         while tmp_index < last_index:
             page_filelist.append(DictImagePath[tmp_index])
             list_idx.append(tmp_index)
+            frame_list.append(id2frame[tmp_index])
             tmp_index += 1
 
-    for imgpath, id in zip(page_filelist, list_idx):
-        pagefile.append({"imgpath": imgpath, "id": id})
+    for imgpath, id, frame in zip(page_filelist, list_idx, frame_list):
+        pagefile.append({"imgpath": imgpath, "id": id, 'frame_id': frame})
 
     data = {"num_page": int(LenDictPath / imgperindex) + 1, "pagefile": pagefile}
 
@@ -81,12 +81,12 @@ def image_search():
     print("image search")
     pagefile = []
     id_query = int(request.args.get("imgid"))
-    _, list_ids, _, list_image_paths = MyFaiss.image_search(id_query, k=50)
+    _, list_ids, _, list_image_paths = MyFaiss.image_search(id_query, k=100)
 
     imgperindex = 100
 
     for imgpath, id in zip(list_image_paths, list_ids):
-        pagefile.append({"imgpath": imgpath, "id": int(id)})
+        pagefile.append({"imgpath": imgpath, "id": int(id), 'frame_id': id2frame[int(id)]})
 
     data = {"num_page": int(LenDictPath / imgperindex) + 1, "pagefile": pagefile}
 
@@ -99,12 +99,12 @@ def text_search():
 
     pagefile = []
     text_query = request.args.get("textquery")
-    _, list_ids, _, list_image_paths = MyFaiss.text_search(text_query, k=50)
+    _, list_ids, _, list_image_paths = MyFaiss.text_search(text_query, k=100)
 
     imgperindex = 100
 
     for imgpath, id in zip(list_image_paths, list_ids):
-        pagefile.append({"imgpath": imgpath, "id": int(id)})
+        pagefile.append({"imgpath": imgpath, "id": int(id), 'frame_id': id2frame[int(id)]})
 
     data = {
         "query": text_query,
@@ -117,9 +117,7 @@ def text_search():
 
 @app.route("/get_img")
 def get_img():
-    # print("get_img")
     fpath = request.args.get("fpath")
-    # fpath = fpath
     list_image_name = fpath.split("/")
     image_name = "/".join(list_image_name[-2:])
 
@@ -130,9 +128,6 @@ def get_img():
         img = cv2.imread("./static/images/404.jpg")
 
     img = cv2.resize(img, (640, 360))
-
-    # print(img.shape)
-    # img = cv2.putText(img, image_name, (30, 80), cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 4, cv2.LINE_AA)
 
     ret, jpeg = cv2.imencode(".jpg", img)
     return Response(
